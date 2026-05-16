@@ -83,9 +83,9 @@ void CodeCheckerWindow::onUploadClicked() {
             QTextStream in(&file);
             codeEditor->setPlainText(in.readAll());
             file.close();
-            outputConsole->append("Đã tải file: " + fileName);
+            outputConsole->append("Already Download: " + fileName);
         } else {
-            outputConsole->append("Lỗi: Không thể mở file " + fileName);
+            outputConsole->append("Error: Can not openning file " + fileName);
         }
     }
 }
