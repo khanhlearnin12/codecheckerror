@@ -1,0 +1,244 @@
+#include "CodeCheckerWindow.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSplitter>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QProcess>
+
+
+
+// Constructor
+CodeCheckerWindow::CodeCheckerWindow(QWidget *parent) : QWidget(parent) {
+    setupUI();
+    
+    // Kết nối Signal (sự kiện) với Slot (hàm xử lý)
+    connect(btnUpload, &QPushButton::clicked, this, &CodeCheckerWindow::onUploadClicked);
+    connect(btnCheck, &QPushButton::clicked, this, &CodeCheckerWindow::onCheckClicked);
+}
+
+// Destructor
+CodeCheckerWindow::~CodeCheckerWindow() {
+    // Qt tự động giải phóng bộ nhớ của các widget con (children) nên không cần delete thủ công ở đây
+}
+
+void CodeCheckerWindow::setupUI() {
+    setWindowTitle("C/C++ Code Checker");
+    resize(1000, 600);
+
+    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
+
+    // ================= PHẦN BÊN TRÁI: Nhập Code =================
+    QWidget *leftWidget = new QWidget(splitter);
+    QVBoxLayout *leftLayout = new QVBoxLayout(leftWidget);
+    leftLayout->setContentsMargins(0, 0, 0, 0);
+
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    btnUpload = new QPushButton("Upload File");
+    btnCheck = new QPushButton("Check the code");
+    
+    buttonLayout->addWidget(btnUpload);
+    buttonLayout->addWidget(btnCheck);
+    buttonLayout->addStretch();
+
+    codeEditor = new QTextEdit();
+    codeEditor->setPlaceholderText("Nhập code C/C++ vào đây hoặc Upload file...");
+    QFont font = codeEditor->font();
+    font.setFamily("Courier New");
+    font.setPointSize(16);
+    codeEditor->setFont(font);
+
+    leftLayout->addLayout(buttonLayout);
+    leftLayout->addWidget(codeEditor);
+
+    // ================= PHẦN BÊN PHẢI: Output Lỗi =================
+    outputConsole = new QTextEdit(splitter);
+    outputConsole->setReadOnly(true);
+    outputConsole->setPlaceholderText("Output từ clang-tidy / cppcheck sẽ hiển thị tại đây...");
+    outputConsole->setStyleSheet("background-color: #1e1e1e; color: #d4d4d4; font-family: monospace;");
+    QFont consFont = outputConsole->font();
+    font.setPointSize(16);
+    font.setFamily("Courier New");
+    outputConsole->setFont(font);
+
+    splitter->addWidget(leftWidget);
+    splitter->addWidget(outputConsole);
+    splitter->setSizes({600, 400});
+
+    mainLayout->addWidget(splitter);
+}
+
+// Hàm xử lý Upload
+void CodeCheckerWindow::onUploadClicked() {
+    QString fileName = QFileDialog::getOpenFileName(this, 
+        "Chọn file C++", "", "C/C++ Files (*.cpp *.c *.h *.hpp);;All Files (*)");
+    
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            codeEditor->setPlainText(in.readAll());
+            file.close();
+            outputConsole->append("Đã tải file: " + fileName);
+        } else {
+            outputConsole->append("Lỗi: Không thể mở file " + fileName);
+        }
+    }
+}
+
+// Hàm xử lý Check Code
+void CodeCheckerWindow::onCheckClicked() {
+    outputConsole->clear();
+    outputConsole->append("CODE IS READY...");
+    
+    QString currentCode = codeEditor->toPlainText();
+    if (currentCode.isEmpty()) {
+        outputConsole->append("ERROR: NO CODE TO CHECK!");
+        return;
+    }
+
+    // 1. Tạo một file tạm và lưu chữ trên màn hình vào file đó
+    QString tempFilePath = "temp_code.cpp";
+    QFile file(tempFilePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << currentCode;
+        file.close();
+    } else {
+        outputConsole->append("ERROR: CANNOT CREATE TEMP FILE!");
+        return;
+    }
+
+    // chỉ cần chạy cppcheck 
+        // // 2. Nơi bạn gọi tool của mình
+        // outputConsole->append(">> RUNNING cppcheck...");
+
+        // // Đưa tên file tạm cho myTools và hứng kết quả trả về
+        // QString result = myTools.runCppCheck(tempFilePath); 
+        
+        // // 3. In kết quả lên màn hình bên phải
+        // outputConsole->append(result);
+        // outputConsole->append(">> FINISHED.");
+    
+    QString reportFilePath = "errorreport.txt";
+    
+    QString fullReport = myTools.runAllCheck(tempFilePath, reportFilePath);
+
+    outputConsole->setPlainText(fullReport);
+ 
+    outputConsole->append("\n>> Already save error report at: " + reportFilePath);
+}
+
+//lấy File từ Terminal 
+void CodeCheckerWindow::LoadFileFormPath(const QString &filePath){
+    QFile file(filePath);
+    if(file.open(QIODevice::Text | QIODevice::ReadOnly)){
+        QTextStream in(&file);
+        codeEditor->setPlainText(in.readAll());
+        file.close();
+        outputConsole->append("Already Loaded File: " + filePath);
+    }else{
+        outputConsole->append("Error: Can not load file " + filePath + "form terminal");
+    }
+}
+
+//chạy cppcheck 
+ToolsResult toolColab::runCppCheck(const QString &filePath){
+    QProcess process;
+    
+    QStringList args;
+    
+    args << "--quiet"
+         << "--enable=warning,style,performance,portability"
+         << "--suppress=missingIncludeSystem"
+         << filePath;
+    
+    process.start("cppcheck", args);
+    process.waitForFinished(); //doi chay xong
+
+    //thể hiện output bị sai 
+    QString output = process.readAllStandardError().trimmed();
+    
+    bool isPass = output.isEmpty();
+
+    return {"Cppcheck" ,isPass, output};
+}
+
+//chay clang-tidy
+ToolsResult toolColab::runClangTidy(const QString &filePath){
+    QProcess process;
+    //lệnh để chạy clang-tidy
+    QStringList args;
+    args << filePath 
+        << "-checks=bugprone-*,modenize-*,readability-*" 
+        << "--"
+        << "-std=c++17";
+    process.start("clang-tidy",args);
+    process.waitForFinished();
+
+    // Đọc báo cáo CODE từ StandardOutput
+    QString output = process.readAllStandardError().trimmed();
+    // Đọc thêm về error khi tools crash
+    QString systemError = process.readAllStandardError().trimmed();
+    if(!systemError.isEmpty()) output += "\n [System Info:]: " + systemError;
+
+    bool isPass =  output.isEmpty() ||(!output.contains("Warning:") && !output.contains("Error:"));
+    
+    return {"ClangTidy" ,isPass, output};
+}
+
+// --- 2. Hàm tổng hợp (Pipeline) thực thi sơ đồ của bạn ---
+QString toolColab::runAllCheck(const QString &sourceFilePath, const QString &reportFilePath) {
+    // Chạy tất cả các tool và gom vào một danh sách
+    QList<ToolsResult> results;
+    results.append(runCppCheck(sourceFilePath));
+    results.append(runClangTidy(sourceFilePath));
+    // Thêm các tool khác vào đây...
+
+    QString finalReport = "";
+    bool allPass = true; // Cờ theo dõi trạng thái tổng
+
+    // PHẦN 1: IN DANH SÁCH PASS/ERROR (Giống đoạn giữa sơ đồ)
+    finalReport += "========== TOOLS STATUS ==========\n";
+    for (const ToolsResult &res : results) {
+        if (res.passed) {
+            finalReport += res.toolName + ": PASS\n";
+        } else {
+            finalReport += res.toolName + ": ERROR\n";
+            allPass = false; // Chỉ cần 1 tool báo lỗi, cờ này sẽ thành false
+        }
+    }
+    finalReport += "=========================================\n\n";
+
+    // PHẦN 2: CHI TIẾT CÁC LỖI CẦN SỬA
+    if (!allPass) {
+        finalReport += "========== ERROR DETAIL ==========\n";
+        for (const ToolsResult &res : results) {
+            if (!res.passed) {
+                finalReport += "[" + res.toolName + " found the error]:\n";
+                finalReport += res.errorlog + "\n\n";
+            }
+        }
+    }
+
+    // PHẦN 3: KẾT LUẬN CUỐI CÙNG (Giống 2 mũi tên rẽ nhánh ở cuối sơ đồ)
+    finalReport += "========== CONCLUSION ==========\n";
+    if (allPass) finalReport += "CONGRATULATION: ALL PASS\n";
+    else finalReport += "THERE ERROR ABOVE NEED TO BE FIX\n";
+
+    // PHẦN 4: LƯU RA FILE errorreport.txt
+    QFile reportFile(reportFilePath);
+    if (reportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&reportFile);
+        out << finalReport;
+        reportFile.close();
+    }
+
+    // Trả báo cáo này về cho UI hiển thị
+    return finalReport;
+}
+
