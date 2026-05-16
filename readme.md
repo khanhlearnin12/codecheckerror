@@ -1,6 +1,6 @@
 # C/C++ Code Checker GUI 🚀
 
-Thanks to: QT6, clang-tidy , cppcheck, flawfinder tools help me out with this project.
+Thanks to: QT6, clang-tidy , cppcheck, flawfinder, valgrind tools help me out with this project.
 
 A modern Qt6-based Graphical User Interface (GUI) tool that integrates `clang-tidy`,`cppcheck`and `flawfinder` to help you perform static code analysis and find errors in your C/C++ source code easily.
 
@@ -10,7 +10,7 @@ First, you need to install the required dependencies and tools on your Linux env
 
 ```bash
 sudo apt update 
-sudo apt install cmake flawfinder clang-tidy cppcheck qt6-base-dev qt6-tools-dev qt6-declarative-dev build-essential -y 
+sudo apt install cmake flawfinder clang-tidy cppcheck qt6-base-dev qt6-tools-dev qt6-declarative-dev build-essential valgrind -y 
 ```
 
 ## 🚀 How to Build

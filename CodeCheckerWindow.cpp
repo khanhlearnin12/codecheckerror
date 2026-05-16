@@ -22,7 +22,7 @@ CodeCheckerWindow::CodeCheckerWindow(QWidget *parent) : QWidget(parent) {
 
 // Destructor
 CodeCheckerWindow::~CodeCheckerWindow() {
-    // Qt tự động giải phóng bộ nhớ của các widget con (children) nên không cần delete thủ công ở đây
+    // Qt tự động giải phóng bộ nhớ của các widget con (childrủ công ở đâen) nên không cần delete thy
 }
 
 void CodeCheckerWindow::setupUI() {
@@ -113,17 +113,6 @@ void CodeCheckerWindow::onCheckClicked() {
         return;
     }
 
-    // chỉ cần chạy cppcheck 
-        // // 2. Nơi bạn gọi tool của mình
-        // outputConsole->append(">> RUNNING cppcheck...");
-
-        // // Đưa tên file tạm cho myTools và hứng kết quả trả về
-        // QString result = myTools.runCppCheck(tempFilePath); 
-        
-        // // 3. In kết quả lên màn hình bên phải
-        // outputConsole->append(result);
-        // outputConsole->append(">> FINISHED.");
-    
     QString reportFilePath = "errorreport.txt";
     
     QString fullReport = myTools.runAllCheck(tempFilePath, reportFilePath);
@@ -144,6 +133,25 @@ void CodeCheckerWindow::LoadFileFormPath(const QString &filePath){
     }else{
         outputConsole->append("Error: Can not load file " + filePath + "form terminal");
     }
+}
+
+// compile code và output compile file 
+QString toolColab::CompileCode(const QString &filePath){
+    QProcess process;
+    QString executablePath = "./outputfile";
+    QStringList args;
+    args << "-Wall"
+         << "-g"
+         << filePath 
+         << "-o"
+         << executablePath;
+    process.start("g++", args);
+    process.waitForFinished();
+    
+    // Kiểm tra xem g++ có chạy thành công (Exit Code == 0) hay không 
+    if (process.exitCode() != 0) return ""; // tra rỏng nếu bị lỗi biên dịch 
+
+    return executablePath;
 }
 
 //chạy cppcheck 
@@ -182,7 +190,7 @@ ToolsResult toolColab::runClangTidy(const QString &filePath){
 
     if (!process.waitForFinished()){
         if(process.exitStatus() == QProcess::CrashExit){
-            return {"Clang-Tidy", false ,"Hệ Thống đẫ dừng tiếng trình (do có thể bị thiếu Ram/Killed)."};
+            return {"Clang-Tidy", false ,"Process Stop(Could be not enough Ram/Killed)."};
         }
     }
 
@@ -197,6 +205,7 @@ ToolsResult toolColab::runClangTidy(const QString &filePath){
     return {"ClangTidy" ,isPass, output};
 }
 
+//flawfinder tools
 ToolsResult toolColab::runflawfinder(const QString &filePath){
     QProcess process;
     
@@ -222,6 +231,24 @@ ToolsResult toolColab::runflawfinder(const QString &filePath){
     return {"Flawfinder", isPass, output};
 }
 
+//tính về time complie find   
+ToolsResult toolColab::runValgrind(const QString &filePath){
+    QString executableFile = CompileCode(filePath);
+
+    if(executableFile.isEmpty()) return {"Valgrind", false, "Error: Can not run Valgrind (Compiler Error)"};
+
+    QProcess process;
+    QStringList args;
+    args << "--leak-check=full" << executableFile;
+
+    process.start("valgrind", args);
+    process.waitForFinished();
+    
+    QString output = process.readAllStandardError().trimmed();
+
+    bool isPass = output.contains("ERROR SUMMARY: 0 errors");
+    return {"Valgrind",isPass,output};
+}
 
 // --- 2. Hàm tổng hợp (Pipeline) thực thi sơ đồ của bạn ---
 QString toolColab::runAllCheck(const QString &sourceFilePath, const QString &reportFilePath) {
@@ -230,6 +257,7 @@ QString toolColab::runAllCheck(const QString &sourceFilePath, const QString &rep
     results.append(runflawfinder(sourceFilePath));
     results.append(runCppCheck(sourceFilePath));
     results.append(runClangTidy(sourceFilePath));
+    results.append(runValgrind(sourceFilePath));
     
     // Thêm các tool khác vào đây...
 

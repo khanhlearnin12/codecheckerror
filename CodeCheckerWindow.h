@@ -19,9 +19,15 @@ class toolColab{
 
     private:
         // thêm tools vào khoản này
-        ToolsResult runCppCheck(const QString &filePath);
+        //compile code;
+        QString CompileCode(const QString &filePath);
+        //modernize 
         ToolsResult runClangTidy(const QString &filePath);
+        //basic check 
         ToolsResult runflawfinder(const QString &filePath);
+        ToolsResult runCppCheck(const QString &filePath);
+        //time check 
+        ToolsResult runValgrind(const QString &filePath);
         //...
 };
 
