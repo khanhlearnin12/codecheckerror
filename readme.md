@@ -8,7 +8,7 @@ First, you need to install the required dependencies and tools on your Linux env
 
 ```bash
 sudo apt update 
-sudo apt install cmake clang-tidy cppcheck qt6-base-dev qt6-tools-dev qt6-declarative-dev build-essential -y 
+sudo apt install cmake flawfinder clang-tidy cppcheck qt6-base-dev qt6-tools-dev qt6-declarative-dev build-essential -y 
 ```
 
 ## 🚀 How to Build

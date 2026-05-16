@@ -197,12 +197,40 @@ ToolsResult toolColab::runClangTidy(const QString &filePath){
     return {"ClangTidy" ,isPass, output};
 }
 
+ToolsResult toolColab::runflawfinder(const QString &filePath){
+    QProcess process;
+    
+    QStringList args;
+    args << "--dataonly" 
+         << "--minlevel=2" 
+         << filePath;
+    
+    process.start("flawfinder",args);
+    if(!process.waitForFinished()) 
+        return {"Flawfinder", false, "Error: Can not run FlawFinder."};
+
+    QString output = process.readAllStandardError().trimmed();
+
+    // Logic kiểm tra Pass cho Flawfinder
+    bool isPass = !output.contains("  [2]") && 
+                    !output.contains("  [3]") && 
+                    !output.contains("  [4]") && 
+                    !output.contains("  [5]");
+
+    if(output.isEmpty()) isPass = true;
+
+    return {"Flawfinder", isPass, output};
+}
+
+
 // --- 2. Hàm tổng hợp (Pipeline) thực thi sơ đồ của bạn ---
 QString toolColab::runAllCheck(const QString &sourceFilePath, const QString &reportFilePath) {
     // Chạy tất cả các tool và gom vào một danh sách
     QList<ToolsResult> results;
+    results.append(runflawfinder(sourceFilePath));
     results.append(runCppCheck(sourceFilePath));
     results.append(runClangTidy(sourceFilePath));
+    
     // Thêm các tool khác vào đây...
 
     QString finalReport = "";

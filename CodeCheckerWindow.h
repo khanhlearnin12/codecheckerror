@@ -21,6 +21,7 @@ class toolColab{
         // thêm tools vào khoản này
         ToolsResult runCppCheck(const QString &filePath);
         ToolsResult runClangTidy(const QString &filePath);
+        ToolsResult runflawfinder(const QString &filePath);
         //...
 };
 
