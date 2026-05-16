@@ -1,5 +1,7 @@
 # C/C++ Code Checker GUI 🚀
 
+Thanks to: QT6, clang-tidy , cppcheck, flawfinder tools help me out with this project.
+
 A modern Qt6-based Graphical User Interface (GUI) tool that integrates `clang-tidy`,`cppcheck`and `flawfinder` to help you perform static code analysis and find errors in your C/C++ source code easily.
 
 ## 🛠 Prerequisites
