@@ -50,5 +50,4 @@ After a successful build, you can run the application directly from the terminal
 ---
 
 *Hope you guys enjoy my tool! Feel free to open issues or contribute.* ❤️
-
-![gui_image](image.png)
+![mytoolimage](image-1.png)
