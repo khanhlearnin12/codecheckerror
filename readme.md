@@ -16,9 +16,8 @@ sudo apt install cmake clang-tidy cppcheck qt6-base-dev qt6-tools-dev qt6-declar
 Second, clone this repository to your local machine:
 
 ```bash
-git clone [https://github.com/khanhlearnin12/codecheckerror.git](https://github.com/khanhlearnin12/codecheckerror.git)
+git clone https://github.com/khanhlearnin12/codecheckerror.git
 cd codecheckerror
-
 ```
 
 Third, create a build directory and compile the project:
