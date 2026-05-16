@@ -46,7 +46,7 @@ void CodeCheckerWindow::setupUI() {
     buttonLayout->addStretch();
 
     codeEditor = new QTextEdit();
-    codeEditor->setPlaceholderText("Nhập code C/C++ vào đây hoặc Upload file...");
+    codeEditor->setPlaceholderText("Input C/C++ code here or u can Upload file...");
     QFont font = codeEditor->font();
     font.setFamily("Courier New");
     font.setPointSize(16);
@@ -58,7 +58,7 @@ void CodeCheckerWindow::setupUI() {
     // ================= PHẦN BÊN PHẢI: Output Lỗi =================
     outputConsole = new QTextEdit(splitter);
     outputConsole->setReadOnly(true);
-    outputConsole->setPlaceholderText("Output từ clang-tidy / cppcheck sẽ hiển thị tại đây...");
+    outputConsole->setPlaceholderText("Output from clang-tidy / cppcheck will be appear here...");
     outputConsole->setStyleSheet("background-color: #1e1e1e; color: #d4d4d4; font-family: monospace;");
     QFont consFont = outputConsole->font();
     font.setPointSize(16);
@@ -75,7 +75,7 @@ void CodeCheckerWindow::setupUI() {
 // Hàm xử lý Upload
 void CodeCheckerWindow::onUploadClicked() {
     QString fileName = QFileDialog::getOpenFileName(this, 
-        "Chọn file C++", "", "C/C++ Files (*.cpp *.c *.h *.hpp);;All Files (*)");
+        "Chose file C++", "", "C/C++ Files (*.cpp *.c *.h *.hpp);;All Files (*)");
     
     if (!fileName.isEmpty()) {
         QFile file(fileName);
