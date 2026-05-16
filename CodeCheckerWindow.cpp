@@ -175,10 +175,16 @@ ToolsResult toolColab::runClangTidy(const QString &filePath){
     QStringList args;
     args << filePath 
         << "-checks=bugprone-*,modenize-*,readability-*" 
+        << "-header-filter=^$"
         << "--"
         << "-std=c++17";
     process.start("clang-tidy",args);
-    process.waitForFinished();
+
+    if (!process.waitForFinished()){
+        if(process.exitStatus() == QProcess::CrashExit){
+            return {"Clang-Tidy", false ,"Hệ Thống đẫ dừng tiếng trình (do có thể bị thiếu Ram/Killed)."};
+        }
+    }
 
     // Đọc báo cáo CODE từ StandardOutput
     QString output = process.readAllStandardError().trimmed();
