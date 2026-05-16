@@ -1,4 +1,3 @@
-```markdown
 # C/C++ Code Checker GUI 🚀
 
 A modern Qt6-based Graphical User Interface (GUI) tool that integrates `clang-tidy` and `cppcheck` to help you perform static code analysis and find errors in your C/C++ source code easily.
@@ -10,8 +9,6 @@ First, you need to install the required dependencies and tools on your Linux env
 ```bash
 sudo apt update 
 sudo apt install cmake clang-tidy cppcheck qt6-base-dev qt6-tools-dev qt6-declarative-dev build-essential -y 
-```
-
 ```
 
 ## 🚀 How to Build
