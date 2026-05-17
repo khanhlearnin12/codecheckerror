@@ -6,11 +6,10 @@ A modern Qt6-based Graphical User Interface (GUI) tool that integrates `clang-fo
 
 ## 🛠 Prerequisites
 
-First, you need to install the required dependencies and tools on your Linux environment (Debian/Ubuntu/Kali) or WSL:
-
+First, you need to install the required dependencies and tools on your Linux environment (Debian/Ubuntu/Kali) and necessary X11 keyboard extensions for Linux UI or WSL:
 ```bash
 sudo apt update 
-sudo apt install cmake flawfinder clang-tidy cppcheck qt6-base-dev clang-format qt6-tools-dev qt6-declarative-dev build-essential valgrind -y 
+sudo apt install cmake flawfinder clang-tidy cppcheck qt6-base-dev clang-format qt6-tools-dev qt6-declarative-dev build-essential valgrind libxkbcommon-dev libxkbcommon-x11-dev -y 
 ```
 
 ## 🚀 How to Build
