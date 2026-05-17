@@ -16,7 +16,8 @@ struct ToolsResult{
 class toolColab{
     public:
         QString runAllCheck(const QString &filePath, const QString &reportFilePath);
-
+        
+        ToolsResult onMagicFormat(const QString &filePath);
     private:
         // thêm tools vào khoản này
         //compile code;
@@ -28,7 +29,9 @@ class toolColab{
         ToolsResult runCppCheck(const QString &filePath);
         //time check 
         ToolsResult runValgrind(const QString &filePath);
-        //...
+        //check format của clang
+        ToolsResult runclangFormat(const QString &filePath);
+        
 };
 
 //khai báo trước
@@ -50,6 +53,7 @@ public:
 private slots: // hàm xử lý sự kiện
     void onUploadClicked();
     void onCheckClicked();
+    void onFormatClicked();
 
 // thành phần nội bộ
 private:
@@ -60,6 +64,7 @@ private:
     QTextEdit *outputConsole;
     QPushButton *btnUpload;
     QPushButton *btnCheck;
+    QPushButton *btnFormatCode;
     
     //tools minh tu build
     toolColab myTools;  

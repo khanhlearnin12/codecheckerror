@@ -18,6 +18,7 @@ CodeCheckerWindow::CodeCheckerWindow(QWidget *parent) : QWidget(parent) {
     // Kết nối Signal (sự kiện) với Slot (hàm xử lý)
     connect(btnUpload, &QPushButton::clicked, this, &CodeCheckerWindow::onUploadClicked);
     connect(btnCheck, &QPushButton::clicked, this, &CodeCheckerWindow::onCheckClicked);
+    connect(btnFormatCode, &QPushButton::clicked, this , &CodeCheckerWindow::onFormatClicked);
 }
 
 // Destructor
@@ -40,9 +41,11 @@ void CodeCheckerWindow::setupUI() {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     btnUpload = new QPushButton("Upload File");
     btnCheck = new QPushButton("Check the code");
+    btnFormatCode = new QPushButton("Format My Code");
     
     buttonLayout->addWidget(btnUpload);
     buttonLayout->addWidget(btnCheck);
+    buttonLayout->addWidget(btnFormatCode);
     buttonLayout->addStretch();
 
     codeEditor = new QTextEdit();
@@ -71,6 +74,7 @@ void CodeCheckerWindow::setupUI() {
 
     mainLayout->addWidget(splitter);
 }
+
 
 // Hàm xử lý Upload
 void CodeCheckerWindow::onUploadClicked() {
@@ -120,6 +124,40 @@ void CodeCheckerWindow::onCheckClicked() {
     outputConsole->setPlainText(fullReport);
  
     outputConsole->append("\n>> Already save error report at: " + reportFilePath);
+}
+
+// Format lại code 
+void CodeCheckerWindow::onFormatClicked() {
+    outputConsole->append(">> Make your code in good format...");
+
+    QString currentCode = codeEditor->toPlainText();
+    if (currentCode.isEmpty()) return;
+
+    // 1. Lưu code hiện tại xuống file tạm
+    QString tempFilePath = "temp_code.cpp";
+    QFile fileWrite(tempFilePath);
+    if (fileWrite.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&fileWrite);
+        out << currentCode;
+        fileWrite.close();
+    }
+
+    // 2. Gọi logic format file
+    ToolsResult result = myTools.onMagicFormat(tempFilePath);
+
+    if (result.passed) {
+        // 3. QUAN TRỌNG NHẤT: Đọc lại file vừa được format và ghi đè lên màn hình
+        QFile fileRead(tempFilePath);
+        if (fileRead.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&fileRead);
+            codeEditor->setPlainText(in.readAll()); // Code trên màn hình sẽ giật một cái và đẹp ngay lập tức!
+            fileRead.close();
+            outputConsole->append(">> Magic Format: Hoàn tất!");
+        }
+    } else {
+        // Báo lỗi nếu clang-format thất bại
+        outputConsole->append(result.errorlog);
+    }
 }
 
 //lấy File từ Terminal 
@@ -250,14 +288,54 @@ ToolsResult toolColab::runValgrind(const QString &filePath){
     return {"Valgrind",isPass,output};
 }
 
+ToolsResult toolColab::runclangFormat(const QString &filePath){
+    QProcess process;
+    
+    QStringList args;
+    args << "--dry-run" 
+         << "-Werror"
+         << "--style=Google"
+         << filePath;
+
+    process.start("clang-format",args);
+    process.waitForFinished();
+
+    QString output = process.readAllStandardError().trimmed();
+    
+    bool isPass = output.isEmpty();
+    
+    return {"Clang-Format", isPass , output};
+}
+
+ToolsResult toolColab::onMagicFormat(const QString &filePath){
+    QProcess process;
+    
+    QStringList args;
+    
+    args << "-i" 
+         << "--style=Google"
+         << filePath;
+
+    process.start("clang-format", args);
+    process.waitForFinished();
+    
+   // Kiểm tra xem có lỗi hệ thống không
+    if (process.exitCode() != 0) {
+        return {"Clang-Format", false, "Lỗi: Không thể format đoạn code này (Có thể do lỗi cú pháp quá nặng)."};
+    }
+    return {"Clang-Format", true, "Đã format file thành công!"};
+}
+
 // --- 2. Hàm tổng hợp (Pipeline) thực thi sơ đồ của bạn ---
 QString toolColab::runAllCheck(const QString &sourceFilePath, const QString &reportFilePath) {
     // Chạy tất cả các tool và gom vào một danh sách
     QList<ToolsResult> results;
+    results.append(runclangFormat(sourceFilePath));
     results.append(runflawfinder(sourceFilePath));
     results.append(runCppCheck(sourceFilePath));
     results.append(runClangTidy(sourceFilePath));
     results.append(runValgrind(sourceFilePath));
+    
     
     // Thêm các tool khác vào đây...
 
