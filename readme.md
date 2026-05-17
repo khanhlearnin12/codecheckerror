@@ -2,7 +2,7 @@
 
 Thanks to: `QT6`, `clang-tidy` , `cppcheck`, `flawfinder`, `valgrind` ,`clang-format` tools help me out with this project.
 
-A modern Qt6-based Graphical User Interface (GUI) tool that integrates `clang-format`,`clang-tidy`,`cppcheck`and `flawfinder` to help you perform static code analysis and find errors in your C/C++ source code easily.
+A modern Qt6-based Graphical User Interface (GUI) tool that integrates `clang-format`,`clang-tidy`,`cppcheck`, `valgrind` and `flawfinder` to help you perform static code analysis and find errors in your C/C++ source code easily.
 
 ## 🛠 Prerequisites
 
