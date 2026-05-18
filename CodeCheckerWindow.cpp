@@ -270,21 +270,49 @@ ToolsResult toolColab::runflawfinder(const QString &filePath){
 }
 
 //tính về time complie find   
-ToolsResult toolColab::runValgrind(const QString &filePath){
+ToolsResult toolColab::runMemoryCheck(const QString &filePath){
+
     QString executableFile = CompileCode(filePath);
 
-    if(executableFile.isEmpty()) return {"Valgrind", false, "Error: Can not run Valgrind (Compiler Error)"};
+    if(executableFile.isEmpty()) return {"Memory Check", false, "Error: Can not run Valgrind (Compiler Error)"};
 
     QProcess process;
     QStringList args;
-    args << "--leak-check=full" << executableFile;
+    QString actualToolName;
 
+    // tự check hệ điều hành 
+#ifdef Q_OS_MAC // mac using leaks 
+    actualToolName = "Apple Leaks";
+    args << "-atExit" << "--" << executableFile;
+    process.start("leaks", agrs);
+#else //valgrind
+    actualToolName = "Valgrind";
+    args << "--leak-check=full" << executableFile;
     process.start("valgrind", args);
+
+#endif
     process.waitForFinished();
+
+    // Bắt lỗi hệ thống
+    if (process.error() == QProcess::FailedToStart) {
+         return {actualToolName, false, "System: Tool not found '" + actualToolName + "'."};
+    }
     
     QString output = process.readAllStandardError().trimmed();
+    QString errorLog = process.readAllStandardError().trimmed();
+    QString combinedLog = output + "\n" + errorLog;
 
-    bool isPass = output.contains("ERROR SUMMARY: 0 errors");
+    bool isPass = false;
+    
+#ifdef Q_OS_MAC
+    // Với Apple Leaks, nếu an toàn nó sẽ in ra "0 leaks for 0 total leaked bytes"
+    isPass = combinedLog.contains("0 leaks for 0 total leaked bytes");
+#else 
+    //với valgrind 
+    isPass = output.contains("ERROR SUMMARY: 0 errors");
+
+#endif
+
     return {"Valgrind",isPass,output};
 }
 
@@ -334,7 +362,7 @@ QString toolColab::runAllCheck(const QString &sourceFilePath, const QString &rep
     results.append(runflawfinder(sourceFilePath));
     results.append(runCppCheck(sourceFilePath));
     results.append(runClangTidy(sourceFilePath));
-    results.append(runValgrind(sourceFilePath));
+    results.append(runMemoryCheck(sourceFilePath));
     
     
     // Thêm các tool khác vào đây...

@@ -12,6 +12,17 @@ sudo apt update
 sudo apt install cmake flawfinder clang-tidy cppcheck qt6-base-dev clang-format qt6-tools-dev qt6-declarative-dev build-essential valgrind libxkbcommon-dev libxkbcommon-x11-dev -y 
 ```
 
+for MacOS installation with brew:
+```bash
+brew update 
+brew install cmake qt@6 cppcheck llvm flawfinder 
+```
+because there leaks already on xcode-select --install
+```bash
+# do it after brew install on Mac, if already have skip this step  
+xcode-select --install
+```
+
 ## 🚀 How to Build
 
 Second, clone this repository to your local machine:
@@ -23,10 +34,20 @@ cd codecheckerror
 
 Third, create a build directory and compile the project:
 
+For linux Distro and WSL:
 ```bash
+# for linux 
 mkdir build && cd build 
 cmake .. 
 make 
+```
+
+for MacOs;
+```bash
+mkdir build && cd build
+# Let CMake know where is Qt6 after brew installation 
+cmake -D CMAKE_PREFIX_PATH=$(brew --prefix qt@6) ..
+make
 ```
 
 ## 💻 How to Use

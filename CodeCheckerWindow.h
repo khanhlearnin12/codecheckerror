@@ -28,7 +28,7 @@ class toolColab{
         ToolsResult runflawfinder(const QString &filePath);
         ToolsResult runCppCheck(const QString &filePath);
         //time check 
-        ToolsResult runValgrind(const QString &filePath);
+        ToolsResult runMemoryCheck(const QString &filePath);
         //check format của clang
         ToolsResult runclangFormat(const QString &filePath);
 };
