@@ -45,7 +45,7 @@ void CodeCheckerWindow::setupUI() {
     
     buttonLayout->addWidget(btnUpload);
     buttonLayout->addWidget(btnCheck);
-    buttonLayout->addWidget(btnFormatCode);
+    buttonLayout->addWidget(btnFormatCode); 
     buttonLayout->addStretch();
 
     codeEditor = new QTextEdit();
@@ -152,7 +152,7 @@ void CodeCheckerWindow::onFormatClicked() {
             QTextStream in(&fileRead);
             codeEditor->setPlainText(in.readAll()); // Code trên màn hình sẽ giật một cái và đẹp ngay lập tức!
             fileRead.close();
-            outputConsole->append(">> Magic Format: Hoàn tất!");
+            outputConsole->append(">> Magic Format: Format Finished!");
         }
     } else {
         // Báo lỗi nếu clang-format thất bại
