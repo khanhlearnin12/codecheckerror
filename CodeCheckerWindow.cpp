@@ -189,6 +189,32 @@ QString toolColab::CompileCode(const QString &filePath){
     // Kiểm tra xem g++ có chạy thành công (Exit Code == 0) hay không 
     if (process.exitCode() != 0) return ""; // tra rỏng nếu bị lỗi biên dịch 
 
+// ==============================================================
+// KHU VỰC DÀNH RIÊNG CHO MAC: Vượt rào bảo mật SIP
+// ==============================================================
+#ifdef Q_OS_MAC
+    // 1. Tạo file XML chứa "Thẻ bài" cho phép Debug (get-task-allow)
+    QFile entFile("entitlements.plist");
+    if (entFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&entFile);
+        out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            << "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+            << "<plist version=\"1.0\">\n<dict>\n"
+            << "<key>com.apple.security.get-task-allow</key>\n<true/>\n"
+            << "</dict>\n</plist>";
+        entFile.close();
+    }
+
+    // 2. Dùng công cụ 'codesign' của Apple để đóng dấu thẻ bài vào file thực thi
+    QProcess signProcess;
+    QStringList signArgs;
+    signArgs << "-s" << "-" << "-f" << "--entitlements" << "entitlements.plist" << executablePath;
+    
+    signProcess.start("codesign", signArgs);
+    signProcess.waitForFinished();
+#endif
+// ==============================================================
+
     return executablePath;
 }
 
