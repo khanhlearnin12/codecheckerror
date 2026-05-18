@@ -328,6 +328,11 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
     QString errorLog = process.readAllStandardError().trimmed();
     QString combinedLog = output + "\n" + errorLog;
 
+    // 2. THÊM CHỐT CHẶN: Nếu kết quả vẫn rỗng hoàn toàn, báo lỗi ngay!
+    if (combinedLog.trimmed().isEmpty()) {
+        return {actualToolName, false, "System: Tool executed but returned no output. Check if executableFile is valid."};
+    }
+
     bool isPass = false;
     
 #ifdef Q_OS_MAC
@@ -335,11 +340,11 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
     isPass = combinedLog.contains("0 leaks for 0 total leaked bytes");
 #else 
     //với valgrind 
-    isPass = output.contains("ERROR SUMMARY: 0 errors");
+    isPass = combinedLog.contains("ERROR SUMMARY: 0 errors");
 
 #endif
 
-    return {"Valgrind",isPass,output};
+    return {actualToolName, isPass, combinedLog};
 }
 
 ToolsResult toolColab::runclangFormat(const QString &filePath){
