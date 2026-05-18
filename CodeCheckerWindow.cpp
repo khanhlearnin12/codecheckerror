@@ -352,7 +352,7 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
 
     // Mẹo nhỏ: Xóa bớt mấy dòng cảnh báo rác của macOS cho giao diện sạch đẹp (Nếu Pass)
     if (isPass) {
-        combinedLog = "Mọi thứ hoàn hảo! Không phát hiện rò rỉ bộ nhớ (Memory Leak).\n" + outLog;
+        combinedLog = "Mọi thứ hoàn hảo! Không phát hiện rò rỉ bộ nhớ (Memory Leak).\n" + output;
     }
 #else 
     //với valgrind 
