@@ -310,7 +310,7 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
 #ifdef Q_OS_MAC // mac using leaks 
     actualToolName = "Apple Leaks";
     args << "-atExit" << "--" << executableFile;
-    
+
     //theo biến môi trường ép mac phải theo dõi ram 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("MallocStackLogging", "1");
@@ -332,21 +332,31 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
     
     QString output = process.readAllStandardError().trimmed();
     QString errorLog = process.readAllStandardError().trimmed();
-    QString combinedLog = output + "\n" + errorLog;
+    QString combinedLog = output + "\n\n" + errorLog;
 
     // 2. THÊM CHỐT CHẶN: Nếu kết quả vẫn rỗng hoàn toàn, báo lỗi ngay!
     if (combinedLog.trimmed().isEmpty()) {
         return {actualToolName, false, "System: Tool executed but returned no output. Check if executableFile is valid."};
     }
 
-    bool isPass = false;
+    if (combinedLog.trimmed().isEmpty()) {
+        if (process.error() == QProcess::FailedToStart) {
+            return {actualToolName, false, "Hệ thống: Không tìm thấy tool kiểm tra bộ nhớ."};
+        }
+        return {actualToolName, false, "Lỗi: Tool không xuất ra dữ liệu. (Exit code: " + QString::number(process.exitCode()) + ")"};
+    }
     
 #ifdef Q_OS_MAC
     // Với Apple Leaks, nếu an toàn nó sẽ in ra "0 leaks for 0 total leaked bytes"
-    isPass = combinedLog.contains("0 leaks for 0 total leaked bytes");
+    bool isPass = combinedLog.contains("0 leaks for 0 total leaked bytes");
+
+    // Mẹo nhỏ: Xóa bớt mấy dòng cảnh báo rác của macOS cho giao diện sạch đẹp (Nếu Pass)
+    if (isPass) {
+        combinedLog = "Mọi thứ hoàn hảo! Không phát hiện rò rỉ bộ nhớ (Memory Leak).\n" + outLog;
+    }
 #else 
     //với valgrind 
-    isPass = combinedLog.contains("ERROR SUMMARY: 0 errors");
+    bool isPass = combinedLog.contains("ERROR SUMMARY: 0 errors");
 
 #endif
 
