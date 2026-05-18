@@ -381,4 +381,3 @@ QString toolColab::runAllCheck(const QString &sourceFilePath, const QString &rep
     // Trả báo cáo này về cho UI hiển thị
     return finalReport;
 }
-

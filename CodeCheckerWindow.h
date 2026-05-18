@@ -31,7 +31,6 @@ class toolColab{
         ToolsResult runValgrind(const QString &filePath);
         //check format của clang
         ToolsResult runclangFormat(const QString &filePath);
-        
 };
 
 //khai báo trước
