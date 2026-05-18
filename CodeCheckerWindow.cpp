@@ -310,7 +310,13 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
 #ifdef Q_OS_MAC // mac using leaks 
     actualToolName = "Apple Leaks";
     args << "-atExit" << "--" << executableFile;
-    process.start("leaks", args);
+    
+    //theo biến môi trường ép mac phải theo dõi ram 
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("MallocStackLogging", "1");
+    process.setProcessEnvironment(env);
+    //tro thang den duong dan tool cua Apple 
+    process.start("/usr/bin/leaks", args);
 #else //valgrind
     actualToolName = "Valgrind";
     args << "--leak-check=full" << executableFile;
