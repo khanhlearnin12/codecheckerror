@@ -17,7 +17,7 @@ for MacOS installation with brew:
 brew update 
 brew install cmake qt@6 cppcheck llvm flawfinder 
 ```
-because there leaks already on xcode-select --install
+because there leaks already on xcode tool
 ```bash
 # do it after brew install on Mac, if already have skip this step  
 xcode-select --install
