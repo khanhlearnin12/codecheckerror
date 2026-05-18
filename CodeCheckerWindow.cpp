@@ -302,6 +302,9 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
 
     if(executableFile.isEmpty()) return {"Memory Check", false, "Error: Can not run Valgrind (Compiler Error)"};
 
+    QFileInfo exeInfo(executableFile);
+    QString absoluteExePath = exeInfo.absoluteFilePath();
+
     QProcess process;
     QStringList args;
     QString actualToolName;
@@ -309,14 +312,10 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
     // tự check hệ điều hành 
 #ifdef Q_OS_MAC // mac using leaks 
     actualToolName = "Apple Leaks";
-    args << "-atExit" << "--" << executableFile;
+    QString bashCommand = QString("export MallocStackLogging=1 && leaks -atExit -- \"%1\"").arg(absoluteExePath);
 
-    //theo biến môi trường ép mac phải theo dõi ram 
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    env.insert("MallocStackLogging", "1");
-    process.setProcessEnvironment(env);
-    //tro thang den duong dan tool cua Apple 
-    process.start("/usr/bin/leaks", args);
+    args << "-c" << bashCommand;
+    process.start("/bin/bash", args);
 #else //valgrind
     actualToolName = "Valgrind";
     args << "--leak-check=full" << executableFile;
@@ -324,25 +323,12 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
 
 #endif
     process.waitForFinished();
-
-    // Bắt lỗi hệ thống
-    if (process.error() == QProcess::FailedToStart) {
-         return {actualToolName, false, "System: Tool not found '" + actualToolName + "'."};
-    }
     
     QString output = process.readAllStandardError().trimmed();
     QString errorLog = process.readAllStandardError().trimmed();
     QString combinedLog = output + "\n\n" + errorLog;
 
-    // 2. THÊM CHỐT CHẶN: Nếu kết quả vẫn rỗng hoàn toàn, báo lỗi ngay!
     if (combinedLog.trimmed().isEmpty()) {
-        return {actualToolName, false, "System: Tool executed but returned no output. Check if executableFile is valid."};
-    }
-
-    if (combinedLog.trimmed().isEmpty()) {
-        if (process.error() == QProcess::FailedToStart) {
-            return {actualToolName, false, "Hệ thống: Không tìm thấy tool kiểm tra bộ nhớ."};
-        }
         return {actualToolName, false, "Lỗi: Tool không xuất ra dữ liệu. (Exit code: " + QString::number(process.exitCode()) + ")"};
     }
     
@@ -359,7 +345,6 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
     bool isPass = combinedLog.contains("ERROR SUMMARY: 0 errors");
 
 #endif
-
     return {actualToolName, isPass, combinedLog};
 }
 
