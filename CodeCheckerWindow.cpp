@@ -284,7 +284,7 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
 #ifdef Q_OS_MAC // mac using leaks 
     actualToolName = "Apple Leaks";
     args << "-atExit" << "--" << executableFile;
-    process.start("leaks", agrs);
+    process.start("leaks", args);
 #else //valgrind
     actualToolName = "Valgrind";
     args << "--leak-check=full" << executableFile;
