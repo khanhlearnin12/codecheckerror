@@ -312,7 +312,6 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
     // tự check hệ điều hành 
 #ifdef Q_OS_MAC // mac using leaks 
     actualToolName = "Leaks";
-    QString args;
     args << "--atExit" << "--" << executableFile;
     process.start("leaks", args);
 #else //valgrind
