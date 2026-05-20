@@ -311,9 +311,11 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
 
     // tự check hệ điều hành 
 #ifdef Q_OS_MAC // mac using leaks 
-    actualToolName = "Leaks";
-    args << "--atExit" << "--" << executableFile;
-    process.start("leaks", args);
+    actualToolName = "Apple Leaks";
+    // BÍ QUYẾT: Dùng > leak_result.txt 2>&1 để gom TẤT CẢ mọi thứ tống thẳng vào 1 file trung gian
+    QString bashCommand = QString("export MallocStackLogging=1 && leaks -atExit -- \"%1\" > leak_result.txt 2>&1").arg(absoluteExePath);
+    args << "-c" << bashCommand;
+    process.start("/bin/bash", args);
 #else //valgrind
     actualToolName = "Valgrind";
     args << "--leak-check=full" << executableFile;
