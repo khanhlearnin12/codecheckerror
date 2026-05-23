@@ -192,27 +192,27 @@ QString toolColab::CompileCode(const QString &filePath){
 // ==============================================================
 // KHU VỰC DÀNH RIÊNG CHO MAC: Vượt rào bảo mật SIP
 // ==============================================================
-#ifdef Q_OS_MAC
-    // 1. Tạo file XML chứa "Thẻ bài" cho phép Debug (get-task-allow)
-    QFile entFile("entitlements.plist");
-    if (entFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&entFile);
-        out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            << "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
-            << "<plist version=\"1.0\">\n<dict>\n"
-            << "<key>com.apple.security.get-task-allow</key>\n<true/>\n"
-            << "</dict>\n</plist>";
-        entFile.close();
-    }
+// #ifdef Q_OS_MAC
+//     // 1. Tạo file XML chứa "Thẻ bài" cho phép Debug (get-task-allow)
+//     QFile entFile("entitlements.plist");
+//     if (entFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//         QTextStream out(&entFile);
+//         out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+//             << "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+//             << "<plist version=\"1.0\">\n<dict>\n"
+//             << "<key>com.apple.security.get-task-allow</key>\n<true/>\n"
+//             << "</dict>\n</plist>";
+//         entFile.close();
+//     }
 
-    // 2. Dùng công cụ 'codesign' của Apple để đóng dấu thẻ bài vào file thực thi
-    QProcess signProcess;
-    QStringList signArgs;
-    signArgs << "-s" << "-" << "-f" << "--entitlements" << "entitlements.plist" << executablePath;
+//     // 2. Dùng công cụ 'codesign' của Apple để đóng dấu thẻ bài vào file thực thi
+//     QProcess signProcess;
+//     QStringList signArgs;
+//     signArgs << "-s" << "-" << "-f" << "--entitlements" << "entitlements.plist" << executablePath;
     
-    signProcess.start("codesign", signArgs);
-    signProcess.waitForFinished();
-#endif
+//     signProcess.start("codesign", signArgs);
+//     signProcess.waitForFinished();
+// #endif
 // ==============================================================
 
     return executablePath;
@@ -338,7 +338,7 @@ ToolsResult toolColab::runMemoryCheck(const QString &filePath){
     
 #ifdef Q_OS_MAC
     // Với Apple Leaks, nếu an toàn nó sẽ in ra "0 leaks for 0 total leaked bytes"
-    bool isPass = combinedLog.contains("0 leaks for 0 total leaked bytes");
+    bool isPass = combinedLog.contains("ERROR SUMMARY: 0 errors");
 
     // Mẹo nhỏ: Xóa bớt mấy dòng cảnh báo rác của macOS cho giao diện sạch đẹp (Nếu Pass)
     if (isPass) {
