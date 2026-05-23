@@ -15,7 +15,7 @@ sudo apt install cmake flawfinder clang-tidy cppcheck qt6-base-dev clang-format 
 for MacOS installation with brew:
 ```bash
 brew update 
-brew install cmake qt@6 cppcheck llvm flawfinder 
+brew install cmake qt@6 cppcheck llvm flawfinder valgrind
 ```
 because there leaks already on xcode tool
 ```bash
